@@ -62,20 +62,98 @@ function find(c){
         UVIndex(response.coord.lon,response.coord.lat);
         forecast(response.id);
         if(response.cod==200){
-          sCity=JSON.parse(localStorage.getItem("cityname"));
-          console.log(sCity);
+          showCity=JSON.parse(localStorage.getItem("cityname"));
+          console.log(showCity);
           if (sCity==null){
-            sCity=[];
-            sCity.push(city.toUpperCase()
+            showCity=[];
+            showCity.push(city.toUpperCase()
             );
-            localStorage.setItem("cityname",JSON.stringify(sCity));
+            localStorage.setItem("cityname",JSON.stringify(showCity));
             addToList(city);
           }
           else {
             if(find(city)>0){
-              sCity.push(city.toUpperCase());
-              localStorage.setItem("cityname",JSON.stringify(sCity));
+              showCity.push(city.toUpperCase());
+              localStorage.setItem("cityname",JSON.stringify(showCity));
               addToList(city);
             }
           }
         }
+
+        // response 4 uvIndex
+        function UVIndex(ln,lt){
+            var uvqURL="https://api.openweathermap.org/data/2.5/uvi?appid="+ APIKey+"&lat="+lt+"&lon="+ln;
+            $.ajax({
+                url:uvqURL,
+                method:"GET"
+                }).then(function(response){
+                  $(currentUvindex).html(response.value);
+                });
+          }
+
+        // 5 day forecast
+          function forecast(cityid){
+            var dayover= false;
+            var queryforcastURL="https://api.openweathermap.org/data/2.5/forecast?id="+cityid+"&appid="+APIKey;
+            $.ajax({
+              url:queryforcastURL,
+              method:"GET"
+            }).then(function(response){
+              for (i=0;i<5;i++){
+                var date= new Date((response.list[((i+1)*8)-1].dt)*1000).toLocaleDateString();
+                var piccode= response.list[((i+1)*8)-1].weather[0].icon;
+                var picurl="https://openweathermap.org/img/wn/"+piccode+".png";
+                var tempA= response.list[((i+1)*8)-1].main.temp;
+                var tempB=(((tempA-273.5)*1.80)+32).toFixed(2);
+                var humidity= response.list[((i+1)*8)-1].main.humidity;
+                $("#fDate"+i).html(date);
+                $("#fImg"+i).html("<img src="+picurl+">");
+                $("#fTemp"+i).html(tempB+"&#8457");
+                $("#fHumidity"+i).html(humidity+"%");
+              }
+            });
+          }
+
+        //   search history
+        function addToList(c){
+            var listEl= $("<li>"+c.toUpperCase()+"</li>");
+            $(listEl).attr("class","listGroupItem");
+            $(listEl).attr("data-value",c.toUpperCase());
+            $(".listGroup").append(listEl);
+          }
+          function PastSearch(event){
+            var liEl=event.target;
+            if (event.target.matches("li")){
+              city=liEl.textContent.trim();
+              currentWeather(city);
+            }
+          }
+
+        //   clearHistory
+          function clearHistory(event){
+            event.preventDefault();
+            sCity=[];
+            localStorage.removeItem("cityName");
+            document.location.reload();
+          }
+
+        // save to console
+        function loadPrevCity(){
+            $("ul").empty();
+            var showCity = JSON.parse(localStorage.getItem("cityName"));
+            if(showCity!==null){
+              showCity=JSON.parse(localStorage.getItem("cityName"));
+              for(i=0; i<sCity.length;i++){
+                addToList(sCity[i]);
+              }
+              city=showCity[i-1];
+              currentWeather(city);
+            }
+          }
+
+        //   buttons
+        $("#clearHistory").on("click",clearHistory);
+        $("#searchButton").on("click",displayWeather);
+        $(window).on("load",loadPrevCity);
+        $(document).on("click",PastSearch);
+        
