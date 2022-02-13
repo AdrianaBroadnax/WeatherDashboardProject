@@ -26,3 +26,6 @@ At the bottom of the page there is an option to clear the history.
 for the style of the page I was going to go with a more beach theme, I more happy go lucky theme, but some way, some how the style.css is not connected to the index.html so i have to go back and fix that
 
 ## deployed links
+
+https://github.com/AdrianaBroadnax/WeatherDashboardProject.git
+https://adrianabroadnax.github.io/WeatherDashboardProject/
